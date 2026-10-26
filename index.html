@@ -3,57 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Gestor de Captaciones y Visitas Inmobiliarias</title>
+  <title>Control de Visitas Inmobiliarias</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Generador de Códigos QR -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <!-- Iconos Lucide -->
   <script src="https://unpkg.com/lucide@latest"></script>
-  <style>
-    .glass-card { background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(10px); }
-  </style>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col">
 
-  <!-- BARRA DE NAVEGACIÓN SUPERIOR PARA PRUEBAS -->
-  <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
-    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+  <!-- ========================================== -->
+  <!-- BARRA SUPERIOR (SOLO VISIBLE PARA EL ASESOR/ADMIN) -->
+  <!-- ========================================== -->
+  <header id="admin-header" class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <i data-lucide="building-2" class="text-amber-400 w-6 h-6"></i>
         <span class="font-bold text-lg tracking-wide text-white">Sosa Bienes Raíces</span>
-        <span class="text-xs bg-slate-800 text-amber-300 px-2 py-0.5 rounded border border-slate-700">Auto-Guardado</span>
+        <span class="text-xs bg-slate-800 text-amber-300 px-2 py-0.5 rounded border border-slate-700">Panel Asesor</span>
       </div>
-      
-      <!-- Selector de Vistas / Roles -->
-      <div class="flex bg-slate-800 p-1 rounded-lg border border-slate-700 text-xs sm:text-sm">
-        <button id="nav-btn-admin" onclick="switchView('admin')" class="px-3 py-1.5 rounded-md font-medium transition-colors bg-amber-500 text-slate-950">
-          <i data-lucide="shield-check" class="inline w-4 h-4 mr-1"></i> 1. Panel Asesor
-        </button>
-        <button id="nav-btn-survey" onclick="switchView('survey')" class="px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white transition-colors">
-          <i data-lucide="qr-code" class="inline w-4 h-4 mr-1"></i> 2. Encuesta QR
-        </button>
-        <button id="nav-btn-owner" onclick="switchView('owner')" class="px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white transition-colors">
-          <i data-lucide="user" class="inline w-4 h-4 mr-1"></i> 3. Portal Dueño
-        </button>
-      </div>
+      <button onclick="backToPropertyList()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 flex items-center">
+        <i data-lucide="home" class="w-4 h-4 mr-1"></i> Mis Captaciones
+      </button>
     </div>
   </header>
 
   <!-- CONTENEDOR PRINCIPAL -->
-  <main class="max-w-6xl mx-auto p-4 sm:p-6 flex-1 w-full">
+  <main class="max-w-5xl mx-auto p-4 sm:p-6 flex-1 w-full">
 
     <!-- ========================================== -->
     <!-- 1. VISTA ASESOR / ADMINISTRADOR -->
     <!-- ========================================== -->
     <section id="view-admin" class="space-y-6">
       
-      <!-- Sub-vista A: Listado General de Captaciones -->
+      <!-- Listado General de Captaciones -->
       <div id="admin-listing-view" class="space-y-6">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 class="text-2xl font-bold text-slate-900">Mis Captaciones Activas</h1>
-            <p class="text-sm text-slate-500">Administra tus propiedades, registra prospectos y genera accesos privados.</p>
+            <h1 class="text-2xl font-bold text-slate-900">Mis Captaciones</h1>
+            <p class="text-sm text-slate-500">Registra prospectos, genera códigos QR y gestiona enlaces para propietarios.</p>
           </div>
           <button onclick="openNewPropertyModal()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-semibold px-4 py-2.5 rounded-lg flex items-center shadow-sm">
             <i data-lucide="plus-circle" class="w-5 h-5 mr-1.5"></i> Nueva Captación
@@ -61,11 +50,11 @@
         </div>
 
         <div id="properties-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          <!-- Renderizado dinámico de casas -->
+          <!-- Tarjetas de casas cargadas dinámicamente -->
         </div>
       </div>
 
-      <!-- Sub-vista B: Detalle de una Captación Específica -->
+      <!-- Detalle de una Captación Específica -->
       <div id="admin-detail-view" class="hidden space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <button onclick="backToPropertyList()" class="text-slate-600 hover:text-slate-900 flex items-center text-sm font-medium">
@@ -88,39 +77,36 @@
               <span id="detail-badge-status" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">En Venta</span>
               <span id="detail-zone" class="text-xs font-medium text-slate-500 uppercase tracking-wider">Villa de Seris</span>
             </div>
-            <h2 id="detail-title" class="text-xl sm:text-2xl font-bold text-slate-900">Residencia en Villa de Seris</h2>
+            <h2 id="detail-title" class="text-xl sm:text-2xl font-bold text-slate-900">Casa en Villa de Seris</h2>
             <p id="detail-address" class="text-sm text-slate-500 flex items-center">
-              <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i> Calle Principal #120
+              <i data-lucide="map-pin" class="w-4 h-4 mr-1"></i> Calle Mayorga #45
             </p>
             <p id="detail-price" class="text-2xl font-extrabold text-slate-800 mt-2">$2,850,000 MXN</p>
           </div>
 
           <div class="bg-slate-50 border border-slate-200 p-4 rounded-xl flex flex-col justify-between max-w-sm w-full space-y-3">
             <div>
-              <span class="text-xs text-slate-500 uppercase font-semibold">Enlace Privado del Dueño</span>
-              <p class="text-xs text-slate-600 mt-1">Este link solo muestra fechas, horas, calificaciones y comentarios sin revelar datos del comprador.</p>
+              <span class="text-xs text-slate-500 uppercase font-semibold">Enlace Privado para el Propietario</span>
+              <p class="text-xs text-slate-600 mt-1">Este enlace oculta todos los datos personales del comprador y solo muestra fechas, calificaciones y comentarios.</p>
             </div>
-            <div class="flex gap-2">
-              <button onclick="previewOwnerPortal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-medium py-2 rounded-lg flex items-center justify-center">
-                <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1.5"></i> Abrir Portal del Dueño
-              </button>
-            </div>
+            <button onclick="copyOwnerLink()" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2.5 rounded-lg flex items-center justify-center">
+              <i data-lucide="share-2" class="w-3.5 h-3.5 mr-1.5"></i> Copiar Link para WhatsApp
+            </button>
           </div>
         </div>
 
-        <!-- Sección de Visitas -->
+        <!-- Historial de Visitas Privadas -->
         <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm space-y-4">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pb-3 border-b border-slate-100">
             <div>
               <h3 class="font-bold text-slate-900 text-lg">Historial de Visitas Registradas</h3>
-              <p class="text-xs text-slate-500">Tus datos confidenciales son visibles únicamente en este panel.</p>
+              <p class="text-xs text-slate-500">Datos privados y de prospección visibles únicamente en tu panel.</p>
             </div>
             <button onclick="openNewVisitModal()" class="bg-slate-900 hover:bg-slate-800 text-white font-medium text-sm px-4 py-2 rounded-lg flex items-center">
               <i data-lucide="user-plus" class="w-4 h-4 mr-1.5"></i> Registrar Nueva Visita
             </button>
           </div>
 
-          <!-- Tabla de Visitas Privadas del Asesor -->
           <div class="overflow-x-auto">
             <table class="w-full text-left text-sm text-slate-600">
               <thead class="bg-slate-50 text-slate-700 text-xs uppercase font-semibold">
@@ -143,33 +129,31 @@
     </section>
 
     <!-- ========================================== -->
-    <!-- 2. VISTA ENCUESTA DEL COMPRADOR (QR) -->
+    <!-- 2. VISTA EXCLUSIVA DE LA ENCUESTA (QR) -->
     <!-- ========================================== -->
-    <section id="view-survey" class="hidden max-w-xl mx-auto space-y-5">
+    <section id="view-survey" class="hidden max-w-lg mx-auto py-4">
       <div class="bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 shadow-sm space-y-6">
         <div class="text-center space-y-2 border-b border-slate-100 pb-5">
           <span class="inline-block bg-amber-100 text-amber-800 font-semibold text-xs px-3 py-1 rounded-full uppercase">Evaluación de Visita</span>
-          <h2 id="survey-prop-title" class="text-xl sm:text-2xl font-bold text-slate-900">Residencia en Villa de Seris</h2>
-          <p id="survey-client-subtitle" class="text-xs text-slate-500">Tu retroalimentación nos ayuda a brindarte un mejor servicio. Solo toma 1 minuto.</p>
+          <h2 id="survey-prop-title" class="text-xl sm:text-2xl font-bold text-slate-900">Casa en Villa de Seris</h2>
+          <p class="text-xs text-slate-500">Queremos brindarte la mejor experiencia. Tu opinión nos toma menos de un minuto.</p>
         </div>
 
         <form id="survey-form" onsubmit="submitSurvey(event)" class="space-y-6">
-          <input type="hidden" id="survey-target-visit-id" value="">
-          
-          <!-- Calificación de la propiedad -->
+          <!-- Calificación de la casa -->
           <div>
-            <label class="block text-sm font-semibold text-slate-800 mb-2">¿Qué te pareció la casa en general?</label>
+            <label class="block text-sm font-semibold text-slate-800 mb-2">¿Qué te pareció la propiedad?</label>
             <div class="flex items-center justify-center gap-3 py-2">
-              <button type="button" onclick="setSurveyRating(1)" class="star-btn text-slate-300 hover:text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
-              <button type="button" onclick="setSurveyRating(2)" class="star-btn text-slate-300 hover:text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
-              <button type="button" onclick="setSurveyRating(3)" class="star-btn text-slate-300 hover:text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
-              <button type="button" onclick="setSurveyRating(4)" class="star-btn text-slate-300 hover:text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
-              <button type="button" onclick="setSurveyRating(5)" class="star-btn text-slate-300 hover:text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+              <button type="button" onclick="setSurveyRating(1)" class="star-btn text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+              <button type="button" onclick="setSurveyRating(2)" class="star-btn text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+              <button type="button" onclick="setSurveyRating(3)" class="star-btn text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+              <button type="button" onclick="setSurveyRating(4)" class="star-btn text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
+              <button type="button" onclick="setSurveyRating(5)" class="star-btn text-amber-400 p-1"><i data-lucide="star" class="w-8 h-8 fill-current"></i></button>
             </div>
             <input type="hidden" id="survey-rating-val" value="5">
           </div>
 
-          <!-- Percepción del precio -->
+          <!-- Opinión del precio -->
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-2">¿Qué opinas del precio anunciado?</label>
             <div class="grid grid-cols-2 gap-2 text-xs">
@@ -188,33 +172,33 @@
             </div>
           </div>
 
-          <!-- Recursos de Compra (Opción múltiple / combinaciones) -->
+          <!-- Fuentes de financiamiento -->
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-1">¿Cómo proyectas adquirir el inmueble?</label>
             <p class="text-xs text-slate-500 mb-2.5">Puedes seleccionar más de una opción si combinas esquemas.</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Recursos Propios (Contado)" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Contado / Ahorros
+                <input type="checkbox" name="funding_source" value="Recursos Propios (Contado)" class="rounded text-amber-500 mr-2"> Contado / Ahorros
               </label>
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Crédito Bancario" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Crédito Bancario
+                <input type="checkbox" name="funding_source" value="Crédito Bancario" class="rounded text-amber-500 mr-2"> Crédito Bancario
               </label>
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Infonavit" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Infonavit Tradicional
+                <input type="checkbox" name="funding_source" value="Infonavit" class="rounded text-amber-500 mr-2"> Infonavit Tradicional
               </label>
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Cofinavit (Banco + Infonavit)" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Cofinavit (Banco + Infonavit)
+                <input type="checkbox" name="funding_source" value="Cofinavit (Banco + Infonavit)" class="rounded text-amber-500 mr-2"> Cofinavit (Banco + Infonavit)
               </label>
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Fovissste" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Fovissste
+                <input type="checkbox" name="funding_source" value="Fovissste" class="rounded text-amber-500 mr-2"> Fovissste
               </label>
               <label class="border border-slate-200 rounded-lg p-2 flex items-center cursor-pointer hover:bg-slate-50">
-                <input type="checkbox" name="funding_source" value="Venta de otra propiedad" class="rounded text-amber-500 focus:ring-amber-400 mr-2"> Venta de otra propiedad
+                <input type="checkbox" name="funding_source" value="Venta de otra propiedad" class="rounded text-amber-500 mr-2"> Venta de otra propiedad
               </label>
             </div>
           </div>
 
-          <!-- Tiempo de compra -->
+          <!-- Plazo -->
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-1">¿En cuánto tiempo te gustaría comprar?</label>
             <select id="survey-timeline" class="w-full text-xs p-2.5 border border-slate-200 rounded-lg bg-white">
@@ -225,16 +209,16 @@
             </select>
           </div>
 
-          <!-- ¿Desea hacer oferta? -->
+          <!-- Oferta -->
           <div>
-            <label class="block text-sm font-semibold text-slate-800 mb-1">¿Deseas proponer un monto o realizar una oferta? (Opcional)</label>
+            <label class="block text-sm font-semibold text-slate-800 mb-1">¿Deseas proponer una oferta económica? (Opcional)</label>
             <input type="text" id="survey-offer" placeholder="Ej. $2,700,000 MXN o Sujeto a avalúo" class="w-full text-xs p-2.5 border border-slate-200 rounded-lg">
           </div>
 
           <!-- Comentarios -->
           <div>
             <label class="block text-sm font-semibold text-slate-800 mb-1">Comentarios sobre la casa o detalles a considerar</label>
-            <textarea id="survey-comment" rows="3" placeholder="Nos gustó mucho la distribución y la iluminación..." class="w-full text-xs p-2.5 border border-slate-200 rounded-lg"></textarea>
+            <textarea id="survey-comment" rows="3" placeholder="Nos gustó mucho la cochera y la distribución..." class="w-full text-xs p-2.5 border border-slate-200 rounded-lg"></textarea>
           </div>
 
           <button type="submit" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-3 rounded-xl shadow-md transition-all text-sm">
@@ -246,40 +230,34 @@
           <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto">
             <i data-lucide="check" class="w-6 h-6"></i>
           </div>
-          <h3 class="font-bold text-lg text-slate-900">¡Muchas gracias por tu tiempo!</h3>
-          <p class="text-xs text-slate-500">Tus comentarios han sido registrados para dar seguimiento a tu visita.</p>
-          <button onclick="switchView('admin')" class="mt-4 px-4 py-2 bg-slate-900 text-white rounded-lg text-xs font-semibold">
-            Volver al Panel
-          </button>
+          <h3 class="font-bold text-lg text-slate-900">¡Muchas gracias por tu visita!</h3>
+          <p class="text-xs text-slate-500">Tus respuestas han sido enviadas correctamente al asesor a cargo.</p>
         </div>
       </div>
     </section>
 
     <!-- ========================================== -->
-    <!-- 3. VISTA DEL PROPIETARIO (PORTAL PRIVADO) -->
+    <!-- 3. VISTA EXCLUSIVA DEL PROPIETARIO -->
     <!-- ========================================== -->
     <section id="view-owner" class="hidden space-y-6">
-      
-      <!-- Encabezado Propietario -->
       <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 relative overflow-hidden shadow-lg">
         <div class="relative z-10 space-y-2">
           <span class="bg-amber-400 text-slate-950 text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">Reporte de Actividad Inmobiliaria</span>
-          <h1 id="owner-prop-title" class="text-2xl sm:text-3xl font-extrabold text-white">Residencia en Villa de Seris</h1>
+          <h1 id="owner-prop-title" class="text-2xl sm:text-3xl font-extrabold text-white">Casa en Villa de Seris</h1>
           <p id="owner-prop-subtitle" class="text-xs sm:text-sm text-slate-300">Asesor a cargo: Cristian Sosa — Actualizado en tiempo real</p>
         </div>
       </div>
 
-      <!-- Tarjetas de Métricas -->
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span class="text-xs text-slate-400 uppercase font-bold">Total Visitas</span>
           <p id="owner-stat-visits" class="text-2xl sm:text-3xl font-black text-slate-900 mt-1">0</p>
-          <span class="text-[11px] text-slate-500">Citas realizadas</span>
+          <span class="text-[11px] text-slate-500">Recorridos realizados</span>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span class="text-xs text-slate-400 uppercase font-bold">Calificación Casa</span>
           <p id="owner-stat-rating" class="text-2xl sm:text-3xl font-black text-amber-500 mt-1">0.0 <span class="text-sm font-normal text-slate-400">/ 5</span></p>
-          <span class="text-[11px] text-slate-500">Promedio de visitantes</span>
+          <span class="text-[11px] text-slate-500">Promedio general</span>
         </div>
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span class="text-xs text-slate-400 uppercase font-bold">Percepción Precio</span>
@@ -289,22 +267,21 @@
         <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <span class="text-xs text-slate-400 uppercase font-bold">Ofertas Formales</span>
           <p id="owner-stat-offers" class="text-2xl sm:text-3xl font-black text-emerald-600 mt-1">0</p>
-          <span class="text-[11px] text-slate-500">Propuestas registradas</span>
+          <span class="text-[11px] text-slate-500">Propuestas recibidas</span>
         </div>
       </div>
 
-      <!-- Bitácora Transparente y Anónima para el Dueño -->
       <div class="bg-white rounded-xl border border-slate-200 p-5 sm:p-6 shadow-sm space-y-4">
         <div class="flex items-center justify-between pb-3 border-b border-slate-100">
           <div>
             <h3 class="font-bold text-slate-900 text-lg">Bitácora de Visitas Realizadas</h3>
-            <p class="text-xs text-slate-500">Información verificada de prospectos que recorrieron tu propiedad.</p>
+            <p class="text-xs text-slate-500">Registro verificado de las personas que han recorrido tu casa.</p>
           </div>
-          <span class="text-xs bg-slate-100 text-slate-600 font-medium px-2 py-1 rounded">Datos personales protegidos</span>
+          <span class="text-xs bg-slate-100 text-slate-600 font-medium px-2 py-1 rounded">Datos de identidad protegidos</span>
         </div>
 
         <div id="owner-visits-feed" class="space-y-4">
-          <!-- Tarjetas anónimas generadas dinámicamente -->
+          <!-- Tarjetas anónimas cargadas dinámicamente -->
         </div>
       </div>
     </section>
@@ -324,11 +301,11 @@
 
       <div id="visit-form-step">
         <h3 class="text-lg font-bold text-slate-900">Registrar Visita en Sitio</h3>
-        <p class="text-xs text-slate-500 mb-4">Captura los datos del interesado para generar su QR de encuesta.</p>
+        <p class="text-xs text-slate-500 mb-4">Captura los datos del interesado para generar su código QR único.</p>
 
         <form onsubmit="generateVisitQR(event)" class="space-y-4 text-xs sm:text-sm">
           <div>
-            <label class="block font-medium text-slate-700 mb-1">Nombre del Prospecto (Solo visible para ti)</label>
+            <label class="block font-medium text-slate-700 mb-1">Nombre del Prospecto (Solo para ti)</label>
             <input type="text" id="input-client-name" required placeholder="Ej. Carlos Mendoza" class="w-full p-2.5 border border-slate-200 rounded-lg">
           </div>
           <div>
@@ -336,7 +313,7 @@
             <input type="tel" id="input-client-phone" placeholder="Ej. 662 123 4567" class="w-full p-2.5 border border-slate-200 rounded-lg">
           </div>
           <div>
-            <label class="block font-medium text-slate-700 mb-1">Asesor Responsable</label>
+            <label class="block font-medium text-slate-700 mb-1">Asesor que atendió</label>
             <input type="text" id="input-agent-name" required value="Cristian Sosa" class="w-full p-2.5 border border-slate-200 rounded-lg">
           </div>
 
@@ -349,17 +326,17 @@
       <!-- Pantalla que muestra el QR generado para el cliente -->
       <div id="visit-qr-step" class="hidden text-center space-y-4">
         <div class="space-y-1">
-          <h3 class="text-lg font-bold text-slate-900">¡Pide al cliente que escanee!</h3>
-          <p class="text-xs text-slate-500">Apunta con la cámara del celular para abrir la encuesta al instante.</p>
+          <h3 class="text-lg font-bold text-slate-900">Muestra este código al cliente</h3>
+          <p class="text-xs text-slate-500">Al escanearlo con la cámara, abrirá únicamente su cuestionario.</p>
         </div>
 
         <div class="bg-white p-4 border-2 border-slate-200 rounded-xl inline-block shadow-sm">
           <div id="qrcode-canvas" class="flex justify-center"></div>
         </div>
 
-        <div class="flex gap-2">
-          <button onclick="simulateClientScan()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold py-2.5 rounded-lg text-xs flex items-center justify-center">
-            <i data-lucide="smartphone" class="w-4 h-4 mr-1.5"></i> Probar Encuesta Directamente
+        <div class="space-y-2">
+          <button onclick="closeVisitModal()" class="w-full bg-slate-900 hover:bg-slate-800 text-white font-semibold py-2 rounded-lg text-xs">
+            Listo, volver al panel
           </button>
         </div>
       </div>
@@ -393,16 +370,16 @@
         </div>
         <div>
           <label class="block font-medium text-slate-700 mb-1">Dirección Completa</label>
-          <input type="text" id="prop-address" required placeholder="Ej. Calle Principal #120" class="w-full p-2 border border-slate-200 rounded-lg">
+          <input type="text" id="prop-address" required placeholder="Ej. Calle Mayorga #45" class="w-full p-2 border border-slate-200 rounded-lg">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-medium text-slate-700 mb-1">Nombre del Propietario</label>
-            <input type="text" id="prop-owner-name" required placeholder="Ej. Ing. Roberto Gómez" class="w-full p-2 border border-slate-200 rounded-lg">
+            <input type="text" id="prop-owner-name" required placeholder="Ej. Lic. Fernando Morales" class="w-full p-2 border border-slate-200 rounded-lg">
           </div>
           <div>
             <label class="block font-medium text-slate-700 mb-1">Teléfono del Propietario</label>
-            <input type="tel" id="prop-owner-phone" placeholder="Ej. 662 987 6543" class="w-full p-2 border border-slate-200 rounded-lg">
+            <input type="tel" id="prop-owner-phone" placeholder="Ej. 662 211 4455" class="w-full p-2 border border-slate-200 rounded-lg">
           </div>
         </div>
         <div>
@@ -422,10 +399,12 @@
     </div>
   </div>
 
-  <!-- JAVASCRIPT CON AUTO-GUARDADO PERSISTENTE -->
+  <!-- ========================================== -->
+  <!-- JAVASCRIPT: LÓGICA DE RUTAS Y PRIVACIDAD -->
+  <!-- ========================================== -->
   <script>
-    // DATOS PREDETERMINADOS (SI NO HAY NADA EN EL NAVEGADOR)
-    const defaultProperties = [
+    // CARGAR DATOS DESDE LOCALSTORAGE O INICIAR DEFAULT
+    let properties = JSON.parse(localStorage.getItem('sosa_propiedades')) || [
       {
         id: 'prop-1',
         title: 'Casa Residencial en Villa de Seris',
@@ -436,21 +415,10 @@
         ownerPhone: '662 211 4455',
         status: 'En Venta',
         token: 'token_seris_8892'
-      },
-      {
-        id: 'prop-2',
-        title: 'Casa de 1 Planta con Terreno Excedente',
-        zone: 'Pitic',
-        address: 'Blvd. Justo Sierra #12, Hermosillo',
-        price: '$5,400,000 MXN',
-        ownerName: 'Dra. Patricia Ortiz',
-        ownerPhone: '662 333 9988',
-        status: 'Exclusiva',
-        token: 'token_pitic_3341'
       }
     ];
 
-    const defaultVisits = [
+    let visits = JSON.parse(localStorage.getItem('sosa_visitas')) || [
       {
         id: 'vis-1',
         propertyId: 'prop-1',
@@ -463,61 +431,66 @@
         fundingSources: ['Crédito Bancario', 'Recursos Propios (Contado)'],
         timeline: 'Inmediato (menos de 1 mes)',
         offer: '$2,800,000 MXN',
-        comment: 'Excelente iluminación natural y el patio está muy amplio. Nos interesa mucho.',
-        status: 'Completada'
+        comment: 'Excelente distribución y patio amplio. Muy interesados.'
       }
     ];
 
-    // CARGAR DESDE LOCALSTORAGE O USAR PREDETERMINADOS
-    let properties = JSON.parse(localStorage.getItem('sosa_bienes_raices_prop')) || defaultProperties;
-    let visits = JSON.parse(localStorage.getItem('sosa_bienes_raices_vis')) || defaultVisits;
-
-    let currentSelectedPropertyId = properties.length > 0 ? properties[0].id : null;
+    let currentSelectedPropertyId = 'prop-1';
     let currentActiveVisitId = null;
 
-    function saveAllData() {
-      localStorage.setItem('sosa_bienes_raices_prop', JSON.stringify(properties));
-      localStorage.setItem('sosa_bienes_raices_vis', JSON.stringify(visits));
+    function saveToStorage() {
+      localStorage.setItem('sosa_propiedades', JSON.stringify(properties));
+      localStorage.setItem('sosa_visitas', JSON.stringify(visits));
     }
 
-    // INICIALIZACIÓN
+    // RUTEO AUTOMÁTICO SEGÚN LA URL
     window.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
+      
+      const urlParams = new URLSearchParams(window.location.search);
+      const modo = urlParams.get('modo');
+      const propId = urlParams.get('p');
+      const visitId = urlParams.get('v');
+      const token = urlParams.get('token');
+
+      // CASO A: EL CLIENTE ESCANEÓ EL QR DE LA ENCUESTA
+      if (modo === 'encuesta' && propId && visitId) {
+        document.getElementById('admin-header').classList.add('hidden');
+        document.getElementById('view-admin').classList.add('hidden');
+        document.getElementById('view-owner').classList.add('hidden');
+        document.getElementById('view-survey').classList.remove('hidden');
+
+        currentSelectedPropertyId = propId;
+        currentActiveVisitId = visitId;
+        prepareSurveyView();
+        return;
+      }
+
+      // CASO B: EL PROPIETARIO ABRIÓ SU LINK PRIVADO
+      if (modo === 'propietario' && token) {
+        const foundProp = properties.find(p => p.token === token);
+        if (foundProp) {
+          document.getElementById('admin-header').classList.add('hidden');
+          document.getElementById('view-admin').classList.add('hidden');
+          document.getElementById('view-survey').classList.add('hidden');
+          document.getElementById('view-owner').classList.remove('hidden');
+          
+          currentSelectedPropertyId = foundProp.id;
+          renderOwnerPortal();
+          return;
+        }
+      }
+
+      // CASO C: PANEL ASESOR / ADMINISTRADOR (POR DEFECTO)
+      document.getElementById('admin-header').classList.remove('hidden');
+      document.getElementById('view-admin').classList.remove('hidden');
+      document.getElementById('view-survey').classList.add('hidden');
+      document.getElementById('view-owner').classList.add('hidden');
       renderPropertiesGrid();
       updateDetailView();
     });
 
-    // CAMBIO DE VISTAS (MODO DEMO)
-    function switchView(viewName) {
-      document.getElementById('view-admin').classList.add('hidden');
-      document.getElementById('view-survey').classList.add('hidden');
-      document.getElementById('view-owner').classList.add('hidden');
-
-      const btnAdmin = document.getElementById('nav-btn-admin');
-      const btnSurvey = document.getElementById('nav-btn-survey');
-      const btnOwner = document.getElementById('nav-btn-owner');
-
-      btnAdmin.className = "px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white transition-colors";
-      btnSurvey.className = "px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white transition-colors";
-      btnOwner.className = "px-3 py-1.5 rounded-md font-medium text-slate-300 hover:text-white transition-colors";
-
-      if (viewName === 'admin') {
-        document.getElementById('view-admin').classList.remove('hidden');
-        btnAdmin.className = "px-3 py-1.5 rounded-md font-medium transition-colors bg-amber-500 text-slate-950";
-        updateDetailView();
-      } else if (viewName === 'survey') {
-        document.getElementById('view-survey').classList.remove('hidden');
-        btnSurvey.className = "px-3 py-1.5 rounded-md font-medium transition-colors bg-amber-500 text-slate-950";
-        prepareSurveyView();
-      } else if (viewName === 'owner') {
-        document.getElementById('view-owner').classList.remove('hidden');
-        btnOwner.className = "px-3 py-1.5 rounded-md font-medium transition-colors bg-amber-500 text-slate-950";
-        renderOwnerPortal();
-      }
-      lucide.createIcons();
-    }
-
-    // RENDERIZAR LISTADO DE PROPIEDADES
+    // FUNCIONES DEL PANEL ASESOR
     function renderPropertiesGrid() {
       const container = document.getElementById('properties-grid');
       container.innerHTML = '';
@@ -532,7 +505,7 @@
           <div class="space-y-2">
             <div class="flex justify-between items-center">
               <span class="text-xs font-semibold px-2.5 py-0.5 rounded-full ${prop.status === 'En Venta' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800'}">${prop.status}</span>
-              <span class="text-xs text-slate-400">${prop.zone}</span>
+              <span class="text-xs text-slate-400 font-medium">${prop.zone}</span>
             </div>
             <h3 class="font-bold text-slate-900 text-lg">${prop.title}</h3>
             <p class="text-xs text-slate-500 flex items-center">
@@ -542,8 +515,8 @@
           </div>
 
           <div class="pt-4 mt-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
-            <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-1 text-slate-400"></i> ${propVisits.length} Visitas registradas</span>
-            <span class="text-amber-600 font-semibold flex items-center">Ver panel <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i></span>
+            <span class="flex items-center"><i data-lucide="users" class="w-4 h-4 mr-1 text-slate-400"></i> ${propVisits.length} Visitas</span>
+            <span class="text-amber-600 font-semibold flex items-center">Administrar <i data-lucide="chevron-right" class="w-3.5 h-3.5 ml-0.5"></i></span>
           </div>
         `;
         container.appendChild(card);
@@ -551,7 +524,6 @@
       lucide.createIcons();
     }
 
-    // NAVEGACIÓN DENTRO DEL PANEL ADMIN
     function selectProperty(propId) {
       currentSelectedPropertyId = propId;
       document.getElementById('admin-listing-view').classList.add('hidden');
@@ -579,14 +551,13 @@
       lucide.createIcons();
     }
 
-    // RENDERIZAR TABLA DE VISITAS EN DETALLE ADMIN
     function renderVisitsTable() {
       const tbody = document.getElementById('visits-table-body');
       tbody.innerHTML = '';
       const propVisits = visits.filter(v => v.propertyId === currentSelectedPropertyId);
 
       if (propVisits.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-xs">No hay visitas registradas para esta propiedad. Haz clic en "Registrar Nueva Visita".</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="6" class="py-6 text-center text-slate-400 text-xs">No hay visitas registradas aún. Presiona "Registrar Nueva Visita".</td></tr>`;
         return;
       }
 
@@ -608,7 +579,7 @@
           </td>
           <td class="py-3 px-3">
             <span class="inline-block bg-slate-100 text-slate-700 px-2 py-0.5 rounded text-[10px] font-medium">
-              ${v.fundingSources && v.fundingSources.length > 0 ? v.fundingSources.join(', ') : 'Sin especificar'}
+              ${v.fundingSources ? v.fundingSources.join(', ') : 'No especificado'}
             </span>
             ${v.offer ? `<div class="text-emerald-700 font-bold text-[11px] mt-0.5">Oferta: ${v.offer}</div>` : ''}
           </td>
@@ -623,7 +594,7 @@
       lucide.createIcons();
     }
 
-    // MODAL DE VISITA Y GENERACIÓN DE QR
+    // GENERAR QR CON LINK DIRECTO A LA ENCUESTA
     function openNewVisitModal() {
       document.getElementById('visit-form-step').classList.remove('hidden');
       document.getElementById('visit-qr-step').classList.add('hidden');
@@ -648,7 +619,7 @@
       const dateNow = new Date();
       const formattedDate = dateNow.toLocaleDateString('es-MX', { day: '2-digit', month: 'short', year: 'numeric' }) + ' ' + dateNow.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
 
-      // AGREGAR COMO NUEVO ELEMENTO
+      // Registrar la visita base
       visits.unshift({
         id: newVisitId,
         propertyId: currentSelectedPropertyId,
@@ -661,21 +632,19 @@
         fundingSources: [],
         timeline: '',
         offer: '',
-        comment: '',
-        status: 'En proceso'
+        comment: ''
       });
+      saveToStorage();
 
-      // GUARDAR EN STORAGE DE INMEDIATO
-      saveAllData();
+      // Generar URL exacta que abrirá directo la encuesta sin panel
+      const baseUrl = window.location.origin + window.location.pathname;
+      const surveyUrl = `${baseUrl}?modo=encuesta&p=${currentSelectedPropertyId}&v=${newVisitId}`;
 
-      // Generar código QR
       const qrContainer = document.getElementById('qrcode-canvas');
       qrContainer.innerHTML = '';
       
-      const simulatedUrl = window.location.href.split('?')[0] + '?encuesta=' + newVisitId;
-
       new QRCode(qrContainer, {
-        text: simulatedUrl,
+        text: surveyUrl,
         width: 180,
         height: 180,
         colorDark : "#0f172a",
@@ -688,32 +657,27 @@
       updateDetailView();
     }
 
-    function simulateClientScan() {
-      closeVisitModal();
-      switchView('survey');
+    // COPIAR ENLACE DEL PROPIETARIO
+    function copyOwnerLink() {
+      const prop = properties.find(p => p.id === currentSelectedPropertyId);
+      if (!prop) return;
+
+      const baseUrl = window.location.origin + window.location.pathname;
+      const ownerUrl = `${baseUrl}?modo=propietario&token=${prop.token}`;
+
+      navigator.clipboard.writeText(ownerUrl).then(() => {
+        alert('¡Enlace del propietario copiado al portapapeles!\n\nPégalo en WhatsApp para enviárselo al dueño.');
+      }).catch(() => {
+        prompt('Copia este enlace para el propietario:', ownerUrl);
+      });
     }
 
-    // ENCUESTA DEL COMPRADOR (QR)
+    // LÓGICA DE LA ENCUESTA DEL COMPRADOR
     function prepareSurveyView() {
-      // Buscar la visita específica vinculada
-      let targetVisit = visits.find(v => v.id === currentActiveVisitId);
-      if (!targetVisit && visits.length > 0) {
-        targetVisit = visits[0];
-        currentActiveVisitId = targetVisit.id;
-      }
-
-      const prop = properties.find(p => p.id === (targetVisit ? targetVisit.propertyId : currentSelectedPropertyId));
+      const prop = properties.find(p => p.id === currentSelectedPropertyId);
       if (prop) {
         document.getElementById('survey-prop-title').innerText = prop.title;
       }
-
-      if (targetVisit) {
-        document.getElementById('survey-target-visit-id').value = targetVisit.id;
-        document.getElementById('survey-client-subtitle').innerText = `Prospecto: ${targetVisit.clientName} — ${targetVisit.dateTime}`;
-      }
-
-      // Limpiar formulario para nuevo llenado
-      document.getElementById('survey-form').reset();
       document.getElementById('survey-form').classList.remove('hidden');
       document.getElementById('survey-success-msg').classList.add('hidden');
       setSurveyRating(5);
@@ -735,43 +699,32 @@
 
     function submitSurvey(e) {
       e.preventDefault();
-      const targetVisitId = document.getElementById('survey-target-visit-id').value || currentActiveVisitId;
       const rating = parseInt(document.getElementById('survey-rating-val').value);
       const priceOp = document.querySelector('input[name="price_opinion"]:checked').value;
       const timeline = document.getElementById('survey-timeline').value;
       const offer = document.getElementById('survey-offer').value;
       const comment = document.getElementById('survey-comment').value;
 
-      // Obtener casillas seleccionadas
       const checkedBoxes = document.querySelectorAll('input[name="funding_source"]:checked');
       const funding = Array.from(checkedBoxes).map(cb => cb.value);
 
-      // Localizar exactamente esa visita por ID único
-      const targetIndex = visits.findIndex(v => v.id === targetVisitId);
-      if (targetIndex !== -1) {
-        visits[targetIndex].rating = rating;
-        visits[targetIndex].priceOpinion = priceOp;
-        visits[targetIndex].fundingSources = funding.length > 0 ? funding : ['Recursos Propios (Contado)'];
-        visits[targetIndex].timeline = timeline;
-        visits[targetIndex].offer = offer;
-        visits[targetIndex].comment = comment;
-        visits[targetIndex].status = 'Completada';
-        
-        // Guardar cambios
-        saveAllData();
+      const targetVisit = visits.find(v => v.id === currentActiveVisitId);
+      if (targetVisit) {
+        targetVisit.rating = rating;
+        targetVisit.priceOpinion = priceOp;
+        targetVisit.fundingSources = funding.length > 0 ? funding : ['Recursos Propios (Contado)'];
+        targetVisit.timeline = timeline;
+        targetVisit.offer = offer;
+        targetVisit.comment = comment;
+        saveToStorage();
       }
 
       document.getElementById('survey-form').classList.add('hidden');
       document.getElementById('survey-success-msg').classList.remove('hidden');
-      updateDetailView();
       lucide.createIcons();
     }
 
-    // PORTAL DEL PROPIETARIO (LINK PRIVADO)
-    function previewOwnerPortal() {
-      switchView('owner');
-    }
-
+    // PORTAL PRIVADO DEL PROPIETARIO
     function renderOwnerPortal() {
       const prop = properties.find(p => p.id === currentSelectedPropertyId);
       if (!prop) return;
@@ -797,7 +750,6 @@
         document.getElementById('owner-stat-price').innerText = 'Sin visitas';
       }
 
-      // Renderizar visitas anónimas para el dueño
       const feed = document.getElementById('owner-visits-feed');
       feed.innerHTML = '';
 
@@ -826,7 +778,7 @@
               <span class="font-semibold text-slate-700">Percepción del precio:</span> ${v.priceOpinion}
             </div>
             <div class="text-slate-600">
-              <span class="font-semibold text-slate-700">Esquema financiero:</span> ${v.fundingSources && v.fundingSources.length > 0 ? v.fundingSources.join(' + ') : 'No indicado'}
+              <span class="font-semibold text-slate-700">Recursos proyectados:</span> ${v.fundingSources ? v.fundingSources.join(' + ') : 'No indicado'}
             </div>
           </div>
 
@@ -840,14 +792,14 @@
             <div class="bg-white border border-slate-200 p-3 rounded-lg text-xs text-slate-700 italic">
               "${v.comment}"
             </div>
-          ` : '<div class="text-[11px] text-slate-400 italic">El prospecto no dejó notas adicionales.</div>'}
+          ` : '<div class="text-[11px] text-slate-400 italic">El prospecto no dejó comentarios adicionales.</div>'}
         `;
         feed.appendChild(item);
       });
       lucide.createIcons();
     }
 
-    // MODAL DE CREAR / EDITAR CAPTACIÓN
+    // CRUD DE PROPIEDADES
     function openNewPropertyModal() {
       document.getElementById('modal-prop-title').innerText = 'Nueva Captación';
       document.getElementById('prop-id').value = '';
@@ -908,22 +860,22 @@
           ownerName,
           ownerPhone,
           status,
-          token: 'token_' + Math.random().toString(36).substring(2, 8)
+          token: 'token_' + Math.random().toString(36).substring(2, 9)
         });
         currentSelectedPropertyId = newId;
       }
 
-      saveAllData();
+      saveToStorage();
       closePropertyModal();
       renderPropertiesGrid();
       updateDetailView();
     }
 
     function confirmDeleteProperty() {
-      if (confirm('¿Estás seguro de que deseas eliminar esta captación? Se borrarán todas las visitas registradas.')) {
+      if (confirm('¿Deseas eliminar esta captación? Se borrarán sus visitas registradas.')) {
         properties = properties.filter(p => p.id !== currentSelectedPropertyId);
         visits = visits.filter(v => v.propertyId !== currentSelectedPropertyId);
-        saveAllData();
+        saveToStorage();
         backToPropertyList();
       }
     }
@@ -931,7 +883,7 @@
     function deleteVisit(visitId) {
       if (confirm('¿Eliminar este registro de visita?')) {
         visits = visits.filter(v => v.id !== visitId);
-        saveAllData();
+        saveToStorage();
         updateDetailView();
       }
     }
